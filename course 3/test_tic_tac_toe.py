@@ -92,8 +92,8 @@ def test_mc_update_scores(mocker):
         },
         {
             'board': [[X,E,O],[E,X,O],[X,E,O]],
-            'scores': [[0,0,0], [0,0,0], [0,0,0]],
-            'expected': [[-SC,0,SO], [0,-SC,SO], [-SC,0,SO]],
+            'scores': [[-3,-5,3], [-1,-5,-10], [0,0,0]],  # we can also have negative scores
+            'expected': [[-3-SC,-5,3+SO], [-1,-5-SC,-10+SO], [0-SC,0,0+SO]],
             'player': X,  # loss
         },
         {
@@ -138,8 +138,8 @@ def test_get_best_move():
             'scores': [[100,0,0], [10,500,5], [10,10,10]],
             'expected': [(1,0),(2,1)],
         },
-        {
-            'board': [[X,X,E], [X,X,O], [O,E,O]],  # just started
+        {   # sometime, we have to choose within all negative numbers
+            'board': [[X,X,E], [X,X,O], [O,E,O]],  
             'scores': [[-3,6,-2], [8,0,-3], [3,-2,-4]],
             'expected': [(0,2),(2,1)],
         },
