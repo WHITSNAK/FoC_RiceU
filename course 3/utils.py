@@ -28,3 +28,29 @@ def empty_tiles(grid):
                 lst.append((row_i, col_j))
     return lst
 
+
+def gen_all_sequences(outcomes, length):
+    """
+    Iterative function that enumerates the set of all sequences of
+    outcomes of given length
+    """
+    
+    ans = set([()])
+    for dummy_idx in range(length):
+        temp = set()
+        for seq in ans:
+            for item in outcomes:
+                new_seq = list(seq)
+                new_seq.append(item)
+                temp.add(tuple(new_seq))
+        ans = temp
+    return ans
+
+
+def gen_sorted_sequences(outcomes, length):
+    """
+    Function that creates all sorted sequences via gen_all_sequences
+    """    
+    all_sequences = gen_all_sequences(outcomes, length)
+    sorted_sequences = [tuple(sorted(sequence)) for sequence in all_sequences]
+    return set(sorted_sequences)

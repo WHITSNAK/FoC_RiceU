@@ -1,20 +1,10 @@
 from tic_tac_toe import mc_trial, mc_update_scores, get_best_move
 from tic_tac_toe import SCORE_CURRENT, SCORE_OTHER
 from poc_ttt_provided import TTTBoard, EMPTY, PLAYERX, PLAYERO, DRAW
+from utils import compare_grid
 
 E, X, O = EMPTY, PLAYERX, PLAYERO
 SC, SO = SCORE_CURRENT, SCORE_OTHER
-
-
-def compare_grid(grid1, grid2):
-    diff = []
-    for i, row in enumerate(grid1):
-        for j, v in enumerate(row):
-            v2 = grid2[i][j]
-            if v2 != v:
-                data = (i,j), v, v2
-                diff.append(data)
-    return diff
 
 
 def test_mc_trail():
