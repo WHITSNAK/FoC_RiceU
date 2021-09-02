@@ -15,7 +15,14 @@ SCORE_CURRENT = 1.0 # Score for squares played by the current player
 SCORE_OTHER = 2.0   # Score for squares played by the other player
 
 
+# helpers
+def nested_indices(dim):
+    for row_i in range(dim):
+        for col_j in range(dim):
+            yield row_i, col_j
 
+
+# main MCs
 def mc_trial(board, player):
     """
     Play a full TTT game with the given board settings 
@@ -28,7 +35,7 @@ def mc_trial(board, player):
     
     return
     ------
-    None: it directly modify the given 'board' instance
+    None: it directly modifies the given 'board' instance
     """
     current_player = player
     while not board.check_win():
@@ -50,7 +57,7 @@ def mc_update_scores(scores, board, player):
 
     return
     ------
-    None: directly modify the given 'scores' grid
+    None: directly modifies the given 'scores' grid
     """
     dim = board.get_dim()
     
@@ -63,21 +70,20 @@ def mc_update_scores(scores, board, player):
         sign = -1
 
     # loop through all squares in a grid
-    for row_i in range(dim):
-        for col_j in range(dim):
-            val = board.square(row_i, col_j)
+    for row_i, col_j in nested_indices(dim):
+        val = board.square(row_i, col_j)
 
-            if val == provided.EMPTY:
-                scores[row_i][col_j] += 0
+        if val == provided.EMPTY:
+            scores[row_i][col_j] += 0
+        else:
+            # normally win +my_score, -other_score
+            if val == player:
+                score = SCORE_CURRENT
             else:
-                # normally win +my_score, -other_score
-                if val == player:
-                    score = SCORE_CURRENT
-                else:
-                    score = -SCORE_OTHER
+                score = -SCORE_OTHER
 
-                # flip signs if loss, or just ignore if draw
-                scores[row_i][col_j] += sign * score
+            # flip signs if loss, or just ignore if draw
+            scores[row_i][col_j] += sign * score
 
 
 def get_best_move(board, scores):
@@ -92,7 +98,7 @@ def get_best_move(board, scores):
 
     return
     ------
-    (row, col)
+    (row, column): index for the move in a grid
     """
     if board.check_win():
         return None  # game is ended
@@ -101,21 +107,19 @@ def get_best_move(board, scores):
     empties = set(board.get_empty_squares())
 
     # find the max score first
-    max_score = float('-inf')
-    for row_i in range(dim):
-        for col_j in range(dim):
-            val = scores[row_i][col_j]
-            if (row_i, col_j) in empties:
-                max_score = max(max_score, val)
+    max_score = float('-inf')  # we might have negative scores
+    for row_i, col_j in nested_indices(dim):
+        val = scores[row_i][col_j]
+        if (row_i, col_j) in empties:
+            max_score = max(max_score, val)
     
     indices = []
     # loop through again to find idices
-    for row_i in range(dim):
-        for col_j in range(dim):
-            val = scores[row_i][col_j]
-            idx = (row_i, col_j)
-            if val == max_score and idx in empties:
-                indices.append(idx)
+    for row_i, col_j in nested_indices(dim):
+        val = scores[row_i][col_j]
+        idx = (row_i, col_j)
+        if val == max_score and idx in empties:
+            indices.append(idx)
     
     # if more than one, just randomly choose one
     return random.choice(indices)
