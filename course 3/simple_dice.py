@@ -27,8 +27,8 @@ def search_all_expected_value(num_dice):
     return expected
 
 # Monte Carlo Simulation method
-def mc_trial():
-    return [random.randrange(1,7), random.randrange(1,7), random.randrange(1,7)]
+def mc_trial(num_dice):
+    return [random.randrange(1,7) for _ in range(num_dice)]
 
 def get_net_value(dice):
     net = -10.
@@ -42,19 +42,18 @@ def get_net_value(dice):
             net += 0.
     return net
 
-def mc_simu(ntrials):
+def mc_simu(num_dice, ntrials):
     expected = 0.
     for _ in range(ntrials):
-        expected += get_net_value(mc_trial())
-    
+        expected += get_net_value(mc_trial(num_dice))
     return expected / ntrials
 
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# run 500 times each with 10k trials
-sr = pd.Series([mc_simu(1000) for _ in range(5000)])
+# run 5000 times each with 1k trials
+sr = pd.Series([mc_simu(3, 1000) for _ in range(5000)])
 
 # plot it out
 print 'Mean', sr.mean()
@@ -63,3 +62,4 @@ plt.show()
 
 # %%
 print search_all_expected_value(3)
+

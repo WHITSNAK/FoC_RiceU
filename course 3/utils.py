@@ -1,3 +1,7 @@
+"""
+Some utility functions
+"""
+
 def grid_sum(grid):
     total = 0.
     for row in grid:
@@ -43,6 +47,25 @@ def gen_all_sequences(outcomes, length):
                 new_seq = list(seq)
                 new_seq.append(item)
                 temp.add(tuple(new_seq))
+        ans = temp
+    return ans
+
+
+def gen_permutations(outcomes, length):
+    """
+    Iterative function that generates set of permutations of
+    outcomes of length num_trials
+    No repeated outcomes allowed
+    """
+    ans = set([()])
+    for _ in range(length):
+        temp = set()
+        for seq in ans:
+            for outcome in outcomes:
+                new_seq = list(seq)
+                new_seq.append(outcome)
+                if len(new_seq) == len(set(new_seq)):
+                    temp.add(tuple(new_seq))
         ans = temp
     return ans
 
