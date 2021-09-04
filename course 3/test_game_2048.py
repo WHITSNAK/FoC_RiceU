@@ -1,5 +1,5 @@
 # unittests
-import poc_simpletest, random
+import random, pytest
 from game_2048 import merge, empty_tiles, TwentyFortyEight
 from utils import grid_sum, compare_grid
 
@@ -14,11 +14,14 @@ def setup_grid(game, grid):
 
 # tests
 def test_merge():
+    assert merge([]) == []
+    assert merge([2]) == [2]
     assert merge([2,0,2,2]) == [4,2,0,0]
     assert merge([0,0,2,2]) == [4,0,0,0]
     assert merge([2,2,0,0]) == [4,0,0,0]
     assert merge([2,2,2,2,2]) == [4,4,2,0,0]
     assert merge([8,16,16,8]) == [8,32,8,0]
+    assert merge([0,0,0,0,0,0]) == [0,0,0,0,0,0]
     
 
 def test_empty_tiles():
