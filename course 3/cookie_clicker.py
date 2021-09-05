@@ -1,7 +1,6 @@
 """
 Cookie Clicker Simulator
 """
-# %%
 import math
 import poc_clicker_provided as provided
 
@@ -282,7 +281,7 @@ def strategy_cphd(cookies, cps, history, time_left, build_info):
     """
     items = build_info.build_items()
     max_k = None
-    max_cphd = float('-inf')
+    metric = float('-inf')
 
     for item in items:
         item_cost = build_info.get_cost(item)
@@ -294,8 +293,8 @@ def strategy_cphd(cookies, cps, history, time_left, build_info):
         item_cps = build_info.get_cps(item)
         item_cphd = item_cps*60*60 / item_cost
         
-        if max_k is None or item_cphd > max_cphd:
-            max_k, max_cphd = item, item_cphd
+        if max_k is None or item_cphd > metric:
+            max_k, metric = item, item_cphd
     
     return max_k
 
@@ -319,6 +318,7 @@ def run_strategy(strategy_name, time, strategy):
     # more information
     if strategy_name == 'CPHD':
         info = provided.BuildInfo()
+        print 'Total Cookies', state._total_cookies
         for k,v in state._builds_counter.items():
             print k, v, '{:.3}'.format(info.get_cost(k) * 1.15**v)
         print
@@ -344,4 +344,3 @@ def run():
 
 run()
 
-# %%
