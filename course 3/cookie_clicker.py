@@ -28,7 +28,7 @@ class ClickerState:
         """
         Return human readable state
         """
-        return '<Time={}, Total Cookies={}, Current Cookies={}, CPS={}>'.format(
+        return '<Time={:.3}, Total Cookies={:.3}, Current Cookies={:.3}, CPS={:.3}>'.format(
             self._time, self._total_cookies, self._cookies, self._cps
         )
         
