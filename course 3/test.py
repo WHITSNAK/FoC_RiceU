@@ -161,6 +161,87 @@ for seq in gen_all_sequences(choices, 3):
 
 
 # %%
-import random
+d = {
+    "Cursor": [15.0, 0.1],
+    "Grandma": [100.0, 0.5],
+    "Farm": [500.0, 4.0],
+    "Factory": [3000.0, 10.0],
+    "Mine": [10000.0, 40.0],
+    "Shipment": [40000.0, 100.0],
+    "Alchemy Lab": [200000.0, 400.0],
+    "Portal": [1666666.0, 6666.0],
+    "Time Machine": [123456789.0, 98765.0],
+    "Antimatter Condenser": [3999999999.0, 999999.0]
+}
 
-print [random.randrange(1,7) for _ in range(2)]
+import math
+from pprint import pprint
+
+t0 = 0
+cps = 1.
+total_cc = 0.
+net_cc = 0.
+T = 10000000000
+GROWTH_C = 0.15
+DISCOUNT_RATE = 1E-6
+built = {k:0 for k in d}
+
+def present_value(pmt, rate, npmt, n2pmt):
+    annu = (1 + (1 + rate) ** (-npmt)) / rate
+    pval = annu * ((1 + rate) ** (-n2pmt)) * pmt
+    return pval
+    
+def choose_move():
+    max_k, max_pv, jump = None, float('-inf'), float('-inf')
+    rT = T - t0
+    r = max(1/rT, DISCOUNT_RATE)
+    for k, v in d.items():
+        t_needed = math.ceil(max(v[0] - net_cc, 0) / cps)
+        pv = present_value(v[1], DISCOUNT_RATE, rT - t_needed, t_needed)
+    
+        if max_k is None or pv > max_pv:
+            max_k, max_pv = k, pv
+            jump = t_needed
+    
+    return max_k, jump
+
+def perform_move(k):
+    global cps, net_cc
+
+    built[k] += 1
+    net_cc -= d[k][0]
+    cps += d[k][1]
+    d[k][0] *= 1 + GROWTH_C
+
+def tick(jump=1):
+    # allows for 0 jump, for multiple choices
+    global t0, total_cc, net_cc
+    actual_jump = min(jump, T-t0)
+    t0 += actual_jump
+    total_cc += cps * actual_jump
+    net_cc += cps * actual_jump
+
+def simulation():
+    global t0, T
+    while t0 < T:
+        move, jump = choose_move()
+        tick(jump)
+        if move is not None:
+            perform_move(move)
+    
+%time simulation()
+print 'Total CC = {:.3}'.format(total_cc)
+print 'Has CC = {:.2}'.format(net_cc)
+print 'Spent = {:.2}'.format(total_cc - net_cc)
+print 'CPS = {:.2}'.format(cps)
+pprint(built)
+pprint(d)
+
+
+# %%
+from poc_clicker_provided import BuildInfo
+
+a = BuildInfo()
+print a.get_cost('Farm')
+a. update_item('Farm')
+print a.get_cost('Farm')
