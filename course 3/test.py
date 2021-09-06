@@ -245,3 +245,23 @@ a = BuildInfo()
 print a.get_cost('Farm')
 a. update_item('Farm')
 print a.get_cost('Farm')
+
+
+
+# %%
+def genfunc(endfunc):
+    num = 0
+    while True:
+        if endfunc(num):
+            break
+        yield num
+        num += 1
+
+def endfn(num):
+    if num == 7:
+        return True
+    return False
+
+for g in genfunc(endfn):
+    print g
+# %%
