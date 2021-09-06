@@ -85,6 +85,15 @@ class Grid:
             ans.append((row, col + 1))
         return ans
 
+
+    def four_neighbors_wrap(self, row, col):
+        up = (row - 1) % self._grid_height
+        down = (row + 1) % self._grid_height
+        left = (col - 1) % self._grid_width
+        right = (col + 1) % self._grid_width
+        return [[up, col], [down, col], [row, left], [row, right]]
+
+
     def eight_neighbors(self, row, col):
         """
         Returns horiz/vert neighbors of cell (row, col) as well as
@@ -115,4 +124,3 @@ class Grid:
         containing cell
         """
         return (point[1] / cell_size, point[0] / cell_size) 
-
