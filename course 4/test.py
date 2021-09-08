@@ -136,3 +136,7 @@ grid = grids_min(*[
 
 for row in grid:
     print row
+
+
+# %%
+setattr?

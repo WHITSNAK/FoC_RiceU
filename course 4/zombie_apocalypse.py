@@ -118,71 +118,67 @@ class Apocalypse(poc_grid.Grid):
         
         dist = grids_min(*[self._simple_distance_field(entity) for entity in func()])
         return dist
-        
-    
+
     def move_humans(self, zombie_distance_field):
         """
         Function that moves humans away from zombies, diagonal moves
         are allowed
         """
-        new_human_lst = []
-        for human in self.humans():
-            # human wants to maximize distance
-            max_dist, pos_lst = float('-inf'), []
-            current_dist = zombie_distance_field[human[0]][human[1]]
-            for neigh in self.eight_neighbors(human[0], human[1]):
-                if not self.is_empty(neigh[0], neigh[1]):
-                    continue
+        self._move(zombie_distance_field, HUMAN, method='max')
 
-                dist = zombie_distance_field[neigh[0]][neigh[1]]
-                if current_dist > dist:
-                    continue
-                elif dist > max_dist:
-                    max_dist, pos_lst = dist, [neigh]
-                elif dist == max_dist:
-                    pos_lst.append(neigh)
-            
-            if pos_lst:
-                new_pos = random.choice(pos_lst)
-            else:
-                new_pos = human
-            new_human_lst.append(new_pos)
-        
-        self._human_list = new_human_lst
-    
     def move_zombies(self, human_distance_field):
         """
         Function that moves zombies towards humans, no diagonal moves
         are allowed
         """
-        new_zombie_lst = []
-        for zombie in self.zombies():
-            # zombine wants brain and wants to minimize distance
-            min_dist, pos_lst = float('inf'), []
-            current_dist = human_distance_field[zombie[0]][zombie[1]]
-            
-            # zombie can only walk 4 directions
-            for neigh in self.four_neighbors(zombie[0], zombie[1]):
+        self._move(human_distance_field, ZOMBIE, method='min') 
+
+    def _move(self, dist_field, entity_type, method='max'):
+        """
+        Internal move function that simplifies the redundancies
+        """
+        if method == 'max':
+            bound = float('-inf') # human wants to maximize distance
+            comp_func = lambda a, b: a > b
+        elif method == 'min':
+            bound = float('inf')  # zombine wants brain and wants to minimize distance
+            comp_func = lambda a, b: a < b
+        
+        if entity_type == ZOMBIE:
+            lst_name = '_zombie_list'
+            entities = self.zombies()
+            neighbors_func = self.four_neighbors
+        elif entity_type == HUMAN:
+            lst_name = '_human_list'
+            entities = self.humans()
+            neighbors_func = self.eight_neighbors
+        
+        new_lst = []
+        for entity in entities:
+            final_dist, pos_lst = bound, []
+            current_dist = dist_field[entity[0]][entity[1]]
+            for neigh in neighbors_func(entity[0], entity[1]):
+                # go around the impassable
                 if not self.is_empty(neigh[0], neigh[1]):
                     continue
-                
-                dist = human_distance_field[neigh[0]][neigh[1]]
-                if current_dist < dist:
+
+                dist = dist_field[neigh[0]][neigh[1]]
+                if comp_func(current_dist, dist):
                     continue
-                elif dist < min_dist:
-                    min_dist, pos_lst = dist, [neigh]
-                elif dist == min_dist:
+                elif comp_func(dist, final_dist):
+                    final_dist, pos_lst = dist, [neigh]
+                elif dist == final_dist:
                     pos_lst.append(neigh)
             
             if pos_lst:
                 new_pos = random.choice(pos_lst)
             else:
-                new_pos = zombie
-            new_zombie_lst.append(new_pos)
+                new_pos = entity
+            new_lst.append(new_pos)
         
-        self._zombie_list = new_zombie_lst
-    
-    
+        setattr(self, lst_name, new_lst)
+        
+
     def _enqueue_all_neighbors(self, queue, pos, step):
         """
         Store all 4-way neighbors ceils into the queue
@@ -195,6 +191,7 @@ class Apocalypse(poc_grid.Grid):
         for neigh in neighs:
             queue.enqueue(neigh)
     
+  
     def _simple_distance_field(self, center):
         """
         Calcualte the distance field based on only one center position value
