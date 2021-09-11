@@ -1,28 +1,94 @@
 # %%
-cnt = 0
+"""
+Python definition of basic Tree class
 
-def fib(num):
-    global cnt
-    cnt += 1
-    if num == 0:
-        return 0
-    elif num == 1:
-        return 1
-    else:
-        return fib(num - 1) + fib(num - 2)
+IMPORTANT:  Some class methods assume that instances of the Tree class
+always have a single parent (or no parent for the root). See problem #8
+on homework #3 for more details.
+"""
 
-def memoized_fib(num, memo_dict):
-    global cnt
-    cnt += 1
-    if num in memo_dict:
-        return memo_dict[num]
-    else:
-        sum1 = memoized_fib(num - 1, memo_dict)
-        sum2 = memoized_fib(num - 2, memo_dict)
-        memo_dict[num] = sum1 + sum2
-        return sum1 + sum2
 
-for n in range(15):
-    cnt = 0
-    # print '#:', n, 'result:', memoized_fib(n, {0:0, 1:1}), 'count:', cnt
-    print '#:', n, 'result:', fib(n), 'count:', cnt
+class Tree:
+    """
+    Recursive definition for trees plus various tree methods
+    """
+    
+    def __init__(self, value, children):
+        """
+        Create a tree whose root has specific value (a string)
+        Children is a list of references to the roots of the subtrees.  
+        """
+        
+        self._value = value
+        self._children = children
+        
+        
+    def __str__(self):
+        """
+        Generate a string representation of the tree
+        Use an pre-order traversal of the tree
+        """
+        
+        ans = "["
+        
+                   
+        for child in self._children:
+             ans += ", "
+             ans += str(child)
+           
+        ans += str(self._value)
+        return ans + "]"
+
+    def get_value(self):
+        """
+        Getter for node's value
+        """
+        return self._value
+
+    def children(self):
+        """
+        Generator to return children
+        """
+        for child in self._children:
+            yield child
+                    
+    def num_nodes(self):
+        """
+        Compute number of nodes in the tree
+        """
+        ans = 1
+        for child in self._children:
+            ans += child.num_nodes()
+        return ans
+    
+    def num_leaves(self):
+        """
+        Count number of leaves in tree
+        """
+        if len(self._children) == 0:
+            return 1
+        
+        ans = 0
+        for child in self._children:
+            ans += child.num_leaves()
+        return ans
+
+    def height(self):
+        """
+        Compute height of a tree rooted by self
+        """
+        height = 0
+        for child in self._children:
+            height = max(height, child.height() + 1)
+        return height
+
+    
+tree_a = Tree("a", [])
+tree_g = Tree('g', [])
+tree_b = Tree("b", [])
+tree_cab = Tree("c", [tree_a, tree_b])
+tree_dcabe = Tree("d", [tree_cab, Tree("e", []),])
+
+for child in tree_dcabe.children():
+    print str(child)
+
