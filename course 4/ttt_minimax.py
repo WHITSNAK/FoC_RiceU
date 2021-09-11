@@ -1,40 +1,46 @@
-# %%
 """
 Mini-max Tic-Tac-Toe Player
 """
-
 # import poc_ttt_gui
 import poc_ttt_provided as provided
-
-# Set timeout, as mini-max can take a long time
-# import codeskulptor
-# codeskulptor.set_timeout(60)
 
 # SCORING VALUES - DO NOT MODIFY
 SCORES = {provided.PLAYERX: 1,
           provided.DRAW: 0,
           provided.PLAYERO: -1}
 
-STATE_MAP = {
-    2: 'X win', 3: 'O win', 4: 'Draw', None: 'Not Over'
-}
-PLAYER_MAP = {
-    2: 'Player X', 3: 'Player O', 4:'Draw',
-}
 
 def _opponent_move(board, opp):
+    """
+    Generate a list of counter scores for mini operations
+
+    parameter
+    ---------
+    board: the state of game
+    opp: opponent player that is deciding the move
+
+    return
+    ------
+    best score
+    """
     winner = board.check_win()
     if winner is not None:  # leaf nodes
-        return SCORES[winner]  # does not flip sign here
+        board_score = SCORES[winner]
+        return board_score  # does not flip sign here
 
     # not leaf nodes
-    min_score = float('inf')
+    best_score = float('-inf')
     for pos_move in board.get_empty_squares():
         tmp_board = board.clone()
         tmp_board.move(pos_move[0], pos_move[1], opp)
         score = _opponent_move(tmp_board, provided.switch_player(opp))
-        min_score = min(min_score, score)
-    return min_score
+        # uniform for X and O all to max on mini
+        best_score = max(best_score, score * SCORES[opp])
+
+        # early termination, 1 is the best score
+        if best_score == 1:
+            break
+    return best_score * SCORES[opp]  # convert back to correct board score
 
 
 def mm_move(board, player):
@@ -54,12 +60,12 @@ def mm_move(board, player):
     for pos_move in board.get_empty_squares():
         tmp_board = board.clone()
         tmp_board.move(pos_move[0], pos_move[1], player)
-        score = _opponent_move(tmp_board, provided.switch_player(player))
-        score *= SCORES[player]  # uniform for X and O all to max on mini
-        mini_scores.append((score, pos_move))
+        mini_score = _opponent_move(tmp_board, provided.switch_player(player))
+        mini_scores.append((mini_score, pos_move))
     
-    # print mini_scores
-    return max(mini_scores, key=lambda x: x[0])
+    # Best move -> max for X == +1, max for O == -1
+    res = max(mini_scores, key=lambda x: x[0] * SCORES[player])
+    return res
 
 def move_wrapper(board, player, trials):
     """
@@ -73,23 +79,3 @@ def move_wrapper(board, player, trials):
 
 # provided.play_game(move_wrapper, 1, False)        
 # poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
-
-
-# %%
-from poc_ttt_provided import TTTBoard, PLAYERO, PLAYERX, EMPTY
-
-O, X, E = PLAYERO, PLAYERX, EMPTY
-
-_board = [
-    [O,X,E],
-    [O,X,E],
-    [X,O,X]
-]
-board = TTTBoard(3, board=_board)
-# print board
-# board.move(0,2,X)
-# print board
-# board.move(2,0,O)
-# print board
-# print board.check_win()
-mm_move(board, O)

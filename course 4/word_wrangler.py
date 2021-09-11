@@ -3,8 +3,8 @@ Word Wrangler game
 """
 # %%
 import urllib2
-import codeskulptor
-import poc_wrangler_provided as provided
+# import codeskulptor
+# import poc_wrangler_provided as provided
 
 WORDFILE = "assets_scrabble_words3.txt"
 
@@ -150,28 +150,28 @@ def gen_all_strings(word):
     return rest_strings + new_lst
 
 # Function to load words from a file
-def load_words(filename):
-    """
-    Load word list from the file named filename.
+# def load_words(filename):
+#     """
+#     Load word list from the file named filename.
 
-    Returns a list of strings.
-    """
-    url = codeskulptor.file2url(filename)
-    netfile = urllib2.urlopen(url)
-    result = [line[:-1] for line in netfile.readlines()]
-    return result
+#     Returns a list of strings.
+#     """
+#     url = codeskulptor.file2url(filename)
+#     netfile = urllib2.urlopen(url)
+#     result = [line[:-1] for line in netfile.readlines()]
+#     return result
 
-def run():
-    """
-    Run game.
-    """
-    words = load_words(WORDFILE)
-    wrangler = provided.WordWrangler(words, remove_duplicates, 
-                                     intersect, merge_sort, 
-                                     gen_all_strings)
-    provided.run_game(wrangler)
+# def run():
+#     """
+#     Run game.
+#     """
+#     words = load_words(WORDFILE)
+#     wrangler = provided.WordWrangler(words, remove_duplicates, 
+#                                      intersect, merge_sort, 
+#                                      gen_all_strings)
+#     provided.run_game(wrangler)
 
 # Uncomment when you are ready to try the game
-run()
+# run()
 
     
