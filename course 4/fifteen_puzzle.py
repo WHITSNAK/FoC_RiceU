@@ -969,3 +969,17 @@ class Puzzle:
 # import poc_fifteen_gui
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
 
+# # %%
+# _config = [
+#     [15, 11,  8, 12],
+#     [14, 10,  9, 13],
+#     [ 2,  6,  1,  4],
+#     [ 3,  7,  5,  0],
+# ]
+# puzzle = Puzzle(4, 4, _config)
+# print puzzle
+
+# res = puzzle.solve_puzzle()
+# print res
+# print len(res)
+# print puzzle
