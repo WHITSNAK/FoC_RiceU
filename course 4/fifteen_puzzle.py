@@ -17,6 +17,10 @@ DIRFLIP_MAP = {
     'l': 'r',
     'r': 'l'
 }
+COL0_SOLUTION = 'ruldrdlurdluurddlur'
+TOPRIGHT_SOLUTION = 'urdlurrdluldrruld'
+TOPLEFT_SOLUTION = 'drul'
+
 EMPTY = 0
 FULL = 1
 
@@ -57,7 +61,6 @@ class Grid:
         Return the width of the grid for use in the GUI
         """
         return self._grid_width
-
 
     def clear(self):
         """
@@ -124,15 +127,19 @@ class Grid:
         if num >= self._grid_width * self._grid_height:
             raise ValueError('Number is too high')
 
-        row_i, col_j = num // self._grid_height, num % self._grid_width
+        row_i, col_j = num // self._grid_width, num % self._grid_width
         return row_i, col_j
 
     def clone(self):
+        """returns a clone of myself"""
         height, width = self._grid_height, self._grid_width
         new_grid = Grid(height, width)
         for row_i in range(height):
             for col_j in range(width):
-                new_grid._cells[row_i][col_j] = self._cells[row_i][col_j]
+                if self.is_empty(row_i, col_j):
+                    new_grid.set_empty(row_i, col_j)
+                else:
+                    new_grid.set_full(row_i, col_j)
         return new_grid
 
 
@@ -213,11 +220,11 @@ class Node:
     
     def __eq__(self, other):
         """The value matches equals matches"""
-        return self._value == other._value
+        return self._value == other.get_value()
 
     def __ne__(self, other):
         """The value does not match equals no match"""
-        return self._value != other._value
+        return self._value != other.get_value()
     
     def __hash__(self):
         """Hashing the value field"""
@@ -318,6 +325,9 @@ def create_path_graph(grid, start, target):
     que.enqueue(node)
     grid.set_full(start[0], start[1])
 
+    if start == target:  # no need to search
+        return graph, node
+    
     # BFS search with early termination
     # when it first meets the target
     while len(que) > 0:
@@ -345,8 +355,7 @@ def create_path_graph(grid, start, target):
     
     return graph, None  # have not found the target
 
-
-def trace_root(node, trace=[]):
+def trace_root(node):
     """
     Trace upward of a node all the way to the root node
         and create a path alone the way
@@ -362,12 +371,12 @@ def trace_root(node, trace=[]):
     parent_node = node.get_parent()
     if parent_node is None:
         # this is the root
-        trace.append(node)
-        return list(reversed(trace))
-    
-    trace.append(node)
-    return trace_root(parent_node, trace)
+        return [node]
 
+    trace = [node]  # starting one
+    rest_trace = trace_root(parent_node)
+    trace = rest_trace + trace  # just reversed the list start to end
+    return trace
 
 def path2moves(path):
     """
@@ -381,9 +390,9 @@ def path2moves(path):
     ------
     sequential moving string according the path
     """
-    start_pos = path.pop(0).get_value()
+    start_pos = path[0].get_value()
     move_string = ''
-    for node in path:  # get the start to target path
+    for node in path[1:]:  # get the start to target path
         # caluclate incremental shift with its moving string
         target_pos = node.get_value()
         diff = (target_pos[0]-start_pos[0], target_pos[1]-start_pos[1])
@@ -514,9 +523,129 @@ class Puzzle:
             else:
                 assert False, "invalid direction: " + direction
 
+    # core helpers
+    def _find_path(self, grid, start, target):
+        """
+        Finds the optimial path from start tile to target tile
+        """
+        _, target_node = create_path_graph(grid, start, target)
+        if target_node is None:  # if no path to the target
+            return None, None
+
+        target_path = trace_root(target_node)
+        target_path_str = path2moves(target_path)
+        return target_path, target_path_str
+
+    def _move_zero(self, path_grid, target_pos):
+        """
+        move tile 0 to the target position
+
+        parameter
+        ---------
+        path_grid: Grid object that details the moveable area and obstacles
+        target_pos: (row_i, col_j) of the desired position of the tile 0
+
+        return 
+        ------
+        applied movement string for the tile 0, str
+        """
+        zero_pos = self.current_position(0, 0)
+        shift_path, shift_path_str = self._find_path(path_grid, zero_pos, target_pos)
+        assert shift_path is not None
+        self.update_puzzle(shift_path_str)
+        return shift_path_str
+
+    def _move_target(self, path_grid, current_pos, desired_pos):
+        """
+        Use the tile 0 to move an internal tile to its target position
+
+        parameter
+        ---------
+        path_grid: Grid object that details the moveable area and obstacles
+        current_pos: (row_i, col_j) of the current target tile
+        desired_pos: (row_i, col_j) of the desired position of the target tile
+
+        return
+        ------
+        applied movement string for the tile 0, str
+        """
+        # path finding grid
+        grid = path_grid
+        
+        # get moving path for the target tile
+        # that will be used for tile 0 to move it
+        cur_pos = current_pos
+        num_anchor = self.get_number(cur_pos[0], cur_pos[1])
+        target_pos = num_anchor//self._width, num_anchor%self._width
+
+        target_path, target_path_str = self._find_path(grid.clone(), cur_pos, desired_pos)
+        assert target_path is not None
+        
+        # getting where to move tile 0 to & update
+        res = ''
+        cur_pos = self.current_position(*target_pos)
+        for idx, path_node in enumerate(target_path[1:]):
+            shift_path_str = ''
+
+            # need to move tile 0 to swap postiion
+            # target tile is not movable while shifting tile 0
+            shift_target = path_node.get_value()
+            cur_pos = self.current_position(*target_pos)
+            tmp_grid = grid.clone()
+            tmp_grid.set_full(cur_pos[0], cur_pos[1])
+            shift_path_str += self._move_zero(tmp_grid, shift_target)
+            
+            
+            # actually swapping position with the target node
+            swap_ms = DIRFLIP_MAP[target_path_str[idx]]
+            self.update_puzzle(swap_ms)
+            shift_path_str += swap_ms
+
+            # update
+            res += shift_path_str
+
+        return res
+
+    def _invariant_grid(self, target_row, target_col):
+        """
+        Create an OnOff Grid for path finding purpose
+        that satistifies the 'lower_row_invariant' restriction
+        """
+        height, width = self._height, self._width
+        # path finding grid
+        grid = Grid(height, width)
+        invariant_num = target_row * width + target_col
+        total_cells = height * width
+        
+        # setting up obstacles
+        if target_row >= 2:
+            lower_invariant_num = invariant_num
+        else:
+            lower_invariant_num = 2 * (width - 1) + 1
+
+        for num in range(lower_invariant_num + 1, total_cells):
+            row_i, col_j = grid.get_index(num)
+            grid.set_full(row_i, col_j)
+        
+        if target_row <= 1:
+            inum_lst = []
+            # for first two row invariant
+            for idx in range(target_col, width-1):
+                inum_lst.append(0 * width + idx + 1)
+                inum_lst.append(1 * width + idx + 1)
+            
+            # for row0 invariant, below tile also unmutable
+            if target_row == 0:
+                inum_lst.append(1 * width + target_col)
+            
+            for inum in inum_lst:
+                row_i, col_j = grid.get_index(inum)
+                grid.set_full(row_i, col_j)
+        
+        return grid
+
     ##################################################################
     # Phase one methods
-
     def lower_row_invariant(self, target_row, target_col):
         """
         Check whether the puzzle satisfies the lower-right row invariant
@@ -552,17 +681,83 @@ class Puzzle:
         """
         Place correct tile at target position
         Updates puzzle and returns a move string
+        For a puzzle of m x z size, this method is for 
+            all tiles in [2, m) rows
+        
+        parameter
+        ---------
+        target_row, target_col: row_i, col_j that specifizes the target tile
+
+        return
+        ------
+        a stream of movement string for tile 0
+
+        condition
+        ---------
+        lower_row_invariant is always true before and after
         """
-        # replace with your code
-        return ""
+        res = ''
+        target_pos = target_row, target_col
+
+        # path finding grid
+        grid = self._invariant_grid(*target_pos)
+        cur_pos = self.current_position(*target_pos)
+        res += self._move_target(grid, cur_pos, target_pos)
+        
+        # realign tile 0 ready for the next solve
+        tmp_grid = grid.clone()
+        tmp_grid.set_full(*target_pos)
+        res += self._move_zero(tmp_grid, (target_row, target_col - 1))
+        return res
 
     def solve_col0_tile(self, target_row):
         """
-        Solve tile in column zero on specified row (> 1)
+        Solve tile in column zero on specified row (>= 2)
         Updates puzzle and returns a move string
+
+        parameter
+        ---------
+        target_row: column is fixed, target row index
+
+        return
+        ------
+        movement string, str
+
+        condition
+        ---------
+        lower_row_invariant is True
         """
-        # replace with your code
-        return ""
+        res = ''
+        target_col = 0
+        zero_pos = self.current_position(0, 0)
+        cur_pos = self.current_position(target_row, target_col)
+        target_pos = target_row, target_col
+        setup_pos = target_row - 1, 1  # setup position to use preset solution
+
+        # path finding grid
+        grid = self._invariant_grid(*target_pos)
+
+        # sometime, the target tile could be right on top of the tile 0
+        # moving 0 out solves it, but creates an awkard stuck case
+        if cur_pos == (zero_pos[0]-1, zero_pos[1]):
+            res += self._move_zero(grid.clone(), cur_pos)
+        else:
+            # moved target tile to the setup/solvable position
+            res += self._move_target(grid.clone(), cur_pos, setup_pos)
+
+            # moved tile 0 to the solvable position
+            tmp_grid = grid.clone()
+            tmp_grid.set_full(*setup_pos)
+            res += self._move_zero(tmp_grid, (target_pos[0]-1, target_pos[1]))
+
+            self.update_puzzle(COL0_SOLUTION)
+            res += COL0_SOLUTION
+        
+        # realign tile 0 for next solve
+        tmp_grid = grid.clone()
+        tmp_grid.set_full(*target_pos)
+        res += self._move_zero(tmp_grid, (target_pos[0]-1, self._width-1))
+        return res
 
     #############################################################
     # Phase two methods
@@ -571,54 +766,202 @@ class Puzzle:
         """
         Check whether the puzzle satisfies the row zero invariant
         at the given column (col > 1)
-        Returns a boolean
+
+        condition
+        ---------
+        - Tile 0 is at (0, target_col) position
+        - all tiles at row_i > 1 are solved
+        - all tiles between 0 >= row_i >= 1 and j > target_col are solved
+        - tile below Tile 0 is solved (1, target_col)
+
+        return
+        ------
+        True = yes, False = no
         """
-        # replace with your code
-        return False
+        height, width = self.get_height(), self.get_width()
+        
+        if self.current_position(0,0) != (0, target_col):
+            return False
+        
+        for row_i in range(2, height):
+            for col_j in range(width):
+                if self.current_position(row_i, col_j) != (row_i, col_j):
+                    return False
+        
+        for col_j in range(target_col+1, width):
+            for row_i in range(2):
+                if self.current_position(row_i, col_j) != (row_i, col_j):
+                    return False
+
+        if self.current_position(1, target_col) != (1, target_col):
+            return False
+
+        return True
 
     def row1_invariant(self, target_col):
         """
         Check whether the puzzle satisfies the row one invariant
         at the given column (col > 1)
-        Returns a boolean
+
+        condition
+        ---------
+        - Tile 0 is at (1, target_col) position
+        - all tiles at row_i > 1 are solved
+        - all tiles between 0 >= row_i >= 1 and j > target_col are solved
+
+        return
+        ------
+        True = yes, False = no
         """
-        # replace with your code
-        return False
+        height, width = self.get_height(), self.get_width()
+        
+        if self.current_position(0,0) != (1, target_col):
+            return False
+        
+        for row_i in range(2, height):
+            for col_j in range(width):
+                if self.current_position(row_i, col_j) != (row_i, col_j):
+                    return False
+
+        for col_j in range(target_col+1, width):
+            for row_i in range(2):
+                if self.current_position(row_i, col_j) != (row_i, col_j):
+                    return False
+        return True
 
     def solve_row0_tile(self, target_col):
         """
         Solve the tile in row zero at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        res = ''
+        grid = self._invariant_grid(0, target_col)
+        cur_pos, target_pos = self.current_position(0, target_col), (0, target_col)
+        setup_pos = target_pos[0]+1, target_pos[1]-1
+        zero_pos = self.current_position(0, 0)
+
+        # sometime, the target tile could be right on left of the tile 0
+        # moving 0 out solves it, but creates an awkard stuck case
+        if cur_pos == (zero_pos[0], zero_pos[1]-1):
+            res += self._move_zero(grid.clone(), cur_pos)
+
+            # realign tile 0
+            tmp_grid = grid.clone()
+            tmp_grid.set_full(*target_pos)
+            res += self._move_zero(tmp_grid, (setup_pos))
+        else:
+            # move target tile to desired setup position
+            res += self._move_target(grid.clone(), cur_pos, setup_pos)
+
+            # move tile 0 to setup position
+            zero_setup_pos = setup_pos[0], setup_pos[1]-1  # to the right of target setup
+            tmp_grid = grid.clone()
+            tmp_grid.set_full(*setup_pos)
+            res += self._move_zero(tmp_grid, zero_setup_pos)
+
+            # use resolved setup solution
+            # realign tile 0 no need, above did it
+            self.update_puzzle(TOPRIGHT_SOLUTION)
+            res += TOPRIGHT_SOLUTION
+        
+        return res
 
     def solve_row1_tile(self, target_col):
         """
         Solve the tile in row one at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        res = ''
+
+        # move target tile to desired position
+        cur_pos, target_pos = self.current_position(1, target_col), (1, target_col)
+        grid = self._invariant_grid(1, target_col)
+        res += self._move_target(grid.clone(), cur_pos, target_pos)
+
+
+        # realign tile 0
+        tmp_grid = grid.clone()
+        tmp_grid.set_full(*target_pos)  # setup grid before mutate assignment
+        target_pos = target_pos[0] -1, target_col
+        res += self._move_zero(tmp_grid, target_pos)
+
+        return res
 
     ###########################################################
     # Phase 3 methods
+
+    def _is_solved(self):
+        """Boolean Flag indicating whether the puzzle is solved or not"""
+        height, width = self.get_height(), self.get_width()
+        for row_i in range(height):
+            for col_j in range(width):
+                if self.current_position(row_i, col_j) != (row_i, col_j):
+                    return False
+        return True
 
     def solve_2x2(self):
         """
         Solve the upper left 2x2 part of the puzzle
         Updates the puzzle and returns a move string
+        The final 4s
         """
-        # replace with your code
-        return ""
+        res = ''
+        grid = self._invariant_grid(1,1)
+        res += self._move_zero(grid.clone(), (0, 0))  # moves to the origin
+
+        # just keep making circle until its solved
+        cnt = 0
+        while not self._is_solved():
+            if cnt > 3:
+                # no solution
+                break
+
+            self.update_puzzle(TOPLEFT_SOLUTION)
+            res += TOPLEFT_SOLUTION
+            cnt += 1
+
+        return res
 
     def solve_puzzle(self):
         """
         Generate a solution string for a puzzle
         Updates the puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        res = ''
+        height, width = self.get_height(), self.get_width()
+
+        # start from the lower right
+        mstr = self._move_zero(Grid(height, width), (height-1, width-1))
+        res += mstr
+        assert self.lower_row_invariant(height-1, width-1)
+
+        # not include row 0 & 1, up to all other that are i > 1
+        for row_i in range(height-1, 1, -1):
+            for col_j in range(width-1, 0, -1):
+                mstr = self.solve_interior_tile(row_i, col_j)
+                res += mstr
+                assert self.lower_row_invariant(row_i, col_j-1)
+
+            mstr = self.solve_col0_tile(row_i)
+            res += mstr
+            assert self.lower_row_invariant(row_i-1, width-1)
+        
+        for col_j in range(width-1, 1, -1):
+            assert self.row1_invariant(col_j)
+            for row_i in range(1, -1, -1):
+                if row_i == 1:
+                    mstr = self.solve_row1_tile(col_j)
+                    res += mstr
+                else:
+                    assert self.row0_invariant(col_j)
+                    mstr = self.solve_row0_tile(col_j)
+                    res += mstr
+            assert self.row1_invariant(col_j - 1)
+        
+        mstr = self.solve_2x2()
+        res += mstr
+
+        return res
 
 
 # %%
@@ -626,30 +969,3 @@ class Puzzle:
 # import poc_fifteen_gui
 # poc_fifteen_gui.FifteenGUI(Puzzle(4, 4))
 
-
-# %%
-# Some on fly tests
-
-grid = Grid(4, 4)
-
-# setting up obstacles
-cur_pos, target_pos = (1, 2), (2, 2)
-zero, zero_target = (2, 0), (0, 2)
-invariant = 12
-for num in range(invariant, 16):
-    row_i, col_j = grid.get_index(num)
-    grid.set_full(row_i, col_j)
-grid.set_full(cur_pos[0], cur_pos[1])
-print grid
-
-graph, target_node = create_path_graph(grid.clone(), zero, zero_target)
-path = trace_root(target_node, trace=[]) # path from target to start
-print path
-move_string = path2moves(path)
-print move_string
-
-graph, target_node = create_path_graph(grid.clone(), cur_pos, target_pos)
-path = trace_root(target_node, trace=[]) # path from target to start
-print path
-move_string = path2moves(path)
-print move_string
