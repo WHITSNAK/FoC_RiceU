@@ -1,4 +1,12 @@
-import simplegui, math
+"""
+Rice rock verison of spaceship Astriod aracde game 
+"""
+
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+import math
 from random import random, choice
 
 # globals for user interface
@@ -449,3 +457,4 @@ frame.add_button('Start', start_game, 100)
 # starting up the game
 frame.start()
 new_game()
+

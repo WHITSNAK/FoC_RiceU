@@ -1,4 +1,7 @@
-import simplegui
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import math
 from random import randrange
 
@@ -70,3 +73,4 @@ frame.add_input('Enter guess', input_guess, 100)
 frame.start()
 
 new_game()
+

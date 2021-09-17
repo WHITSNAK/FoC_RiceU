@@ -1,4 +1,4 @@
-# %%
+
 def make_binary(length):
     """Create a list of ascending binary numbers"""
     if length == 0:

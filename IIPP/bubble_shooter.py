@@ -1,6 +1,12 @@
-# Basic infrastructure for Bubble Shooter
+"""
+Basic infrastructure for Bubble Shooter
+"""
 
-import simplegui
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+import random
 import random
 import math
 

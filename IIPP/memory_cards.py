@@ -1,6 +1,11 @@
-# implementation of card game - Memory
+"""
+implementation of card game - Memory
+"""
 
-import simplegui
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 import random
 
 N = 16  # number of cards in the deck
@@ -136,4 +141,3 @@ frame.set_draw_handler(draw)
 # get things rolling
 new_game()
 frame.start()
-# Always remember to review the grading rubric

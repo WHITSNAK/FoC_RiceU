@@ -1,5 +1,11 @@
-# template for "Stopwatch: The Game"
-import simplegui
+"""
+template for "Stopwatch: The Game"
+"""
+
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
 # define global variables
 total_ticks = 0
@@ -81,3 +87,4 @@ frame.set_draw_handler(draw)
 frame.start()
 
 # Please remember to review the grading rubric
+

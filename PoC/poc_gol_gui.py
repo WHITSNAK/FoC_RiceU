@@ -2,14 +2,16 @@
 Game of Life GUI
 Click on the canvas to add cells to the simulation
 """
-
-import simplegui
+# %%
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
 # Global constants
 CELL_SIZE = 10
 EMPTY = 0 
 FULL = 1
-
 
 
 class GolGui:
@@ -99,3 +101,4 @@ def run_gui(game):
     gui = GolGui(game)
     gui.start()
     
+

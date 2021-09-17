@@ -2,8 +2,11 @@
 
 ###################################################
 # Student should add code where relevant to the following.
-
-import simplegui
+# %%
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 from random import randrange
 
 # Functions that compute RPSLS
@@ -83,10 +86,10 @@ frame.start()
 ###################################################
 # Test
 
-get_guess("Spock")
-get_guess("dynamite")
-get_guess("paper")
-get_guess("lazer")
+# get_guess("Spock")
+# get_guess("dynamite")
+# get_guess("paper")
+# get_guess("lazer")
 
 ###################################################
 # Sample expected output from test
@@ -104,3 +107,5 @@ get_guess("lazer")
 #
 #Error: Bad input "lazer" to rpsls
 #
+
+# %%

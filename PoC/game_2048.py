@@ -1,7 +1,7 @@
 """
 Clone of 2048 game.
 """
-
+# %%
 import random
 
 INIT_TILES = 2
@@ -196,14 +196,10 @@ class TwentyFortyEight:
 
 
 # GUI
-#import poc_2048_gui
+if __name__ == '__main__':
+    import poc_2048_gui
 
-#poc_2048_gui.run_gui(TwentyFortyEight(4, 4))
+    poc_2048_gui.run_gui(TwentyFortyEight(4, 4))
 
 
-# unittests
-# from test_game_2048 import test_empty_tiles, test_merge, test_game
-
-# test_merge(merge)
-# test_empty_tiles(empty_tiles)
-# test_game(TwentyFortyEight)
+# %%
