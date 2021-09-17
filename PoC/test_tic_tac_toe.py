@@ -1,7 +1,7 @@
 from tic_tac_toe import mc_trial, mc_update_scores, get_best_move
 from tic_tac_toe import SCORE_CURRENT, SCORE_OTHER
 from poc_ttt_provided import TTTBoard, EMPTY, PLAYERX, PLAYERO, DRAW
-from utils import compare_grid
+from .utils import compare_grid
 
 E, X, O = EMPTY, PLAYERX, PLAYERO
 SC, SO = SCORE_CURRENT, SCORE_OTHER
@@ -45,8 +45,8 @@ def test_mc_trail():
 def test_mc_update_scores(mocker):
     # mock up for different values of two scores
     # to make distinction
-    mocker.patch('tic_tac_toe.SCORE_CURRENT', 1.0)
-    mocker.patch('tic_tac_toe.SCORE_OTHER', 2.0)
+    mocker.patch('PoC.tic_tac_toe.SCORE_CURRENT', 1.0)
+    mocker.patch('PoC.tic_tac_toe.SCORE_OTHER', 2.0)
     SC, SO = 1.0, 2.0
 
     stream = [

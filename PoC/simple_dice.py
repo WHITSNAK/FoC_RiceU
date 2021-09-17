@@ -11,7 +11,7 @@ Good game to play?
 
 # %%
 import random
-from utils import gen_all_sequences
+from .utils import gen_all_sequences
 
 # exhasutive search and counting method
 def search_all_expected_value(num_dice):
