@@ -7,6 +7,7 @@ degree definition
 in-degree: # of edges to node[i]
 out-degree: # of edges out of node[i]
 """
+# %%
 import random
 
 # adjacent list implementation
@@ -94,3 +95,41 @@ def in_degree_distribution(graph):
 
     return dist
 
+
+def algo_er(num_nodes, prob):
+    """Adjacent list implementation of ER DiGraph algo"""
+    graph = {k:set() for k in range(num_nodes)}
+
+    for row_i in range(num_nodes):
+        for col_j in range(num_nodes):
+            if row_i == col_j:
+                continue  # no self loop
+            
+            if random.random() < prob:
+                graph[row_i].add(col_j)
+
+    return graph
+
+
+def algo_dpa(num_nodes, init_nodes):
+    graph = make_complete_graph(init_nodes)
+
+    # weighted list for choice
+    # in-degree edge, nodes, all counts 1
+    all_nodes_lst = []
+    for node, edges in graph.items():
+        all_nodes_lst.append(node)
+        all_nodes_lst.extend(list(edges))
+
+    for new_node in range(init_nodes, num_nodes):
+        # getting edges based on already weighted list
+        chosen = random.choices(all_nodes_lst, k=init_nodes)
+        graph[new_node] = set(chosen)
+
+        all_nodes_lst.append(new_node)
+        all_nodes_lst.extend(chosen)
+
+    return graph
+
+
+    
