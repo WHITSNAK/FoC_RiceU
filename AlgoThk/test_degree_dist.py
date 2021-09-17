@@ -1,24 +1,7 @@
 import pytest
 from graph_degree import EX_GRAPH0, EX_GRAPH1, EX_GRAPH2
-from graph_degree import make_complete_graph, compute_in_degrees, in_degree_distribution
+from graph_degree import compute_in_degrees, in_degree_distribution
 
-
-def test_make_complete_graph():
-    N = 3
-    graph = make_complete_graph(N)
-    for k, v in graph.items():
-        assert k not in v
-        assert len(v) == N-1
-
-def test_make_complete_graph_zero():
-    N = 0
-    graph = make_complete_graph(N)
-    assert len(graph) == 0
-
-def test_make_complete_graph_neg():
-    N = -1
-    graph = make_complete_graph(N)
-    assert graph == {}
 
 @pytest.fixture
 def graph1():
