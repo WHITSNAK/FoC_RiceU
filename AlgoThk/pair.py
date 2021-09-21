@@ -1,35 +1,36 @@
+"""
+Module for finding the closest pair of two cluster objects
+within a 2-D plane
+1. Brutal Force Implementation          O(n**2)
+2. Divide-and-conquer implementation    O(nlogn)
+"""
 # %%
-import math
+from alg_cluster import Cluster
 
 
-def euclidian_dist(point1, point2):
-    """Return the euclidian distance between two points"""
-    return math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
-
-
-def slow_closest_pair(points):
+def slow_closest_pair(clusters):
     """
     Brutal froce implementation of finding the closest pair
-    among all given points in (x, y) 2-D plane
+    among all given clusters in (x, y) 2-D plane
 
     parameter
     ---------
-    points: list of unique set of points in 2-D plane
+    clusters: list of unique set of clusters in 2-D plane
 
     return
     ------
-    mininum euclidian distance, point1 index, point2 index
+    mininum euclidian distance, cluster1 index, cluster2 index
     """
     min_dist = float('inf')
     min_u, min_v = -1, -1
-    num_points = len(points)
+    num = len(clusters)
 
-    for idx_u in range(num_points):
-        for idx_v in range(num_points):
+    for idx_u in range(num):
+        for idx_v in range(num):
             if idx_u == idx_v:
                 continue
-
-            new_dist = euclidian_dist(points[idx_u], points[idx_v])
+            
+            new_dist = clusters[idx_u].distance(clusters[idx_v])
             if new_dist < min_dist:
                 min_dist = new_dist
                 min_u, min_v = idx_u, idx_v
@@ -37,39 +38,39 @@ def slow_closest_pair(points):
     return min_dist, min_u, min_v
 
 
-def fast_closest_pair(points):
+def fast_closest_pair(clusters):
     """
     Divide and Conquer implementatoin of closest pair finding algorithm
-    among all given points in (x, y) 2-D plane
+    among all given clusters in (x, y) 2-D plane
 
     parameter
     ---------
-    points: list of unique set of points in 2-D plane
+    clusters: list of unique set of clusters in 2-D plane
             presorted by x-coordinate
 
     return
     ------
     mininum euclidian distance, point1 index, point2 index
     """
-    num_points = len(points)
-    if num_points <= 3:  # base case, use brutal force
-        return slow_closest_pair(points)
+    num = len(clusters)
+    if num <= 3:  # base case, use brutal force
+        return slow_closest_pair(clusters)
     
     # split down to two subproblems
-    mid = num_points // 2
-    ps_l, ps_r = points[:mid], points[mid:]
+    mid = num // 2
+    ps_l, ps_r = clusters[:mid], clusters[mid:]
     res_l = fast_closest_pair(ps_l)
     res_r = fast_closest_pair(ps_r)
     
     # ensure correct indexes come from subproblems
     if res_l[0] < res_r[0]:
-        min_res = res_l[0], points.index(ps_l[res_l[1]]), points.index(ps_l[res_l[2]])
+        min_res = res_l[0], clusters.index(ps_l[res_l[1]]), clusters.index(ps_l[res_l[2]])
     else:
-        min_res = res_r[0], points.index(ps_r[res_r[1]]), points.index(ps_r[res_r[2]])
+        min_res = res_r[0], clusters.index(ps_r[res_r[1]]), clusters.index(ps_r[res_r[2]])
 
     # check on middle strip split point and its correctness
-    mid = (points[mid-1][0] + points[mid][0]) / 2.0
-    res_s = closest_pair_strip(points, mid, min_res[0])
+    mid = (clusters[mid-1].horiz_center() + clusters[mid].horiz_center()) / 2.0
+    res_s = closest_pair_strip(clusters, mid, min_res[0])
 
     # final result
     if res_s[0] < min_res[0]:
@@ -78,14 +79,14 @@ def fast_closest_pair(points):
     return min_res
 
 
-def closest_pair_strip(points, mid, delta):
+def closest_pair_strip(clusters, mid, delta):
     """
     Fast divide and conquer closest pair finding algorithm
         strip pairs checking part
 
     parameter
     ---------
-    points: list of quniue set of points in 2-D plane, presorted by x-coordinate
+    clusters: list of quniue set of clusters in 2-D plane, presorted by x-coordinate
     mid: the bisection mid point at x-coordinate
     delta: the strip width
 
@@ -99,43 +100,58 @@ def closest_pair_strip(points, mid, delta):
         possibility that a closer pair could be form by one
         point at each section
     """
-    # sort with y-coordinate, ascending order
-    _points = filter(lambda x: abs(x[0] - mid) < delta, points)
-    num_points = len(_points)
+    # filter, then sort with y-coordinate ascending order
+    _clusters = filter(lambda x: abs(x.horiz_center() - mid) < delta, clusters)
+    _clusters.sort(key=lambda x: x.vert_center())
+
+    num = len(_clusters)
     min_dist = float('inf')
     min_u, min_v = -1, -1
 
-    for idx_u in range(num_points-1):
+    for idx_u in range(num-1):
         # only need to check up to 7 points
-        for idx_v in range(idx_u+1, min(idx_u+7, num_points)):
-            
-            new_dist = euclidian_dist(_points[idx_u], _points[idx_v])
+        for idx_v in range(idx_u+1, min(idx_u+8, num)):
+
+            new_dist = _clusters[idx_u].distance(_clusters[idx_v])
             if new_dist < min_dist:
                 min_dist = new_dist
                 # need the original, unprocessed indexes
-                min_u = points.index(_points[idx_u])
-                min_v = points.index(_points[idx_v])
+                min_u = clusters.index(_clusters[idx_u])
+                min_v = clusters.index(_clusters[idx_v])
 
     return min_dist, min_u, min_v
 
 
+def create_dummy_clusters(points=None):
+    """Return a list of dummy clusters for testing"""
+    clusters = []
+    for i, p in enumerate(points):
+        c = Cluster(set([i]), p[0], p[1], 0, 0)
+        clusters.append(c)
+    return clusters
+
+
+
 # %%
 # plotting that tests the running time of two algos
-import random, time
-import matplotlib.pyplot as plt
+# import random, time
+# import matplotlib.pyplot as plt
 
-random.seed(209523948)
-M = 10
-times = []
-for n in range(10, 10100, 100):
-    points = [(random.random()*M, random.random()*M) for _ in range(n)]
-    stime = time.time()
-    min_dist, pu, pv = fast_closest_pair(points)
-    etime = time.time()
-    elapse = etime - stime
-    times.append(elapse)
+# random.seed(209523948)
+# M = 10
+# times = []
+# for n in range(10, 10100, 100):
+#     points = [(random.random()*M, random.random()*M) for _ in range(n)]
+#     points.sort(key=lambda x: x[0])  # sorted by x-coord
+#     clusters = create_dummy_clusters(points)
 
-plt.plot(range(10, 10100, 100), times)
+#     stime = time.time()
+#     min_dist, pu, pv = fast_closest_pair(clusters)
+#     etime = time.time()
+#     elapse = etime - stime
+#     times.append(elapse)
+
+# plt.plot(range(10, 10100, 100), times)
 
 
 # %%
@@ -146,9 +162,10 @@ plt.plot(range(10, 10100, 100), times)
 # M = 10
 # for n in range(20, 520, 20):
 #     points = [(random.random()*M, random.random()*M) for _ in range(n)]
-#     points = sorted(points, key=lambda x: x[0])  # sorted by x-coord
-#     res_slow = slow_closest_pair(points)
-#     res_fast = fast_closest_pair(points)
+#     points.sort(key=lambda x: x[0])  # sorted by x-coord
+#     clusters = create_dummy_clusters(points)
+#     res_slow = slow_closest_pair(clusters)
+#     res_fast = fast_closest_pair(clusters)
 #     assert abs(res_slow[0] - res_fast[0]) <= 1e-4
 
 # %%
@@ -180,16 +197,17 @@ plt.plot(range(10, 10100, 100), times)
 #     (8.833212263099961, 8.33792402677629),
 #     (9.331759888717958, 5.761495413919164)
 # ]
+# clusters = create_dummy_clusters(points)
 
 # plt.plot(
-#     map(lambda x: x[0], points), map(lambda x: x[1], points),
+#     map(lambda x: x.horiz_center(), clusters), map(lambda x: x.vert_center(), clusters),
 #     marker='.', linestyle='', markersize=8, color='b'
 # )
 
-# dist, idx_u, idx_v = slow_closest_pair(points)
-# # dist, idx_u, idx_v = fast_closest_pair(points)
+# # dist, idx_u, idx_v = slow_closest_pair(clusters)
+# dist, idx_u, idx_v = fast_closest_pair(clusters)
 # plt.plot(
-#     [points[idx_u][0], points[idx_v][0]],
-#     [points[idx_u][1], points[idx_v][1]],
+#     [clusters[idx_u].horiz_center(), clusters[idx_v].horiz_center()],
+#     [clusters[idx_u].vert_center(), clusters[idx_v].vert_center()],
 #     marker='.', linestyle='', markersize=8, color='orange'
 # )
