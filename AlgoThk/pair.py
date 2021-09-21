@@ -1,11 +1,13 @@
 """
 Module for finding the closest pair of two cluster objects
-within a 2-D plane
-1. Brutal Force Implementation          O(n**2)
-2. Divide-and-conquer implementation    O(nlogn)
+within a 2-D plane and Clustering algorithms
+1. Brutal Force pair finding            O(n**2)
+2. Divide-and-conquer pair finding      O(nlogn)
+3. Hierarchical Clustering              Q(n**2 logn)
+4. K-Means Clustering                   O(qnk)
 """
 # %%
-from alg_cluster import Cluster
+import alg_cluster
 
 
 def slow_closest_pair(clusters):
@@ -20,6 +22,7 @@ def slow_closest_pair(clusters):
     return
     ------
     mininum euclidian distance, cluster1 index, cluster2 index
+        i1 < i2
     """
     min_dist = float('inf')
     min_u, min_v = -1, -1
@@ -35,7 +38,8 @@ def slow_closest_pair(clusters):
                 min_dist = new_dist
                 min_u, min_v = idx_u, idx_v
 
-    return min_dist, min_u, min_v
+    # sort two index
+    return tuple([min_dist] + sorted((min_u, min_v)))
 
 
 def fast_closest_pair(clusters):
@@ -51,6 +55,7 @@ def fast_closest_pair(clusters):
     return
     ------
     mininum euclidian distance, point1 index, point2 index
+        i1 < i2
     """
     num = len(clusters)
     if num <= 3:  # base case, use brutal force
@@ -76,7 +81,8 @@ def fast_closest_pair(clusters):
     if res_s[0] < min_res[0]:
         min_res = res_s
 
-    return min_res
+    # sort two index
+    return tuple([min_res[0]] + sorted(min_res[1:]))
 
 
 def closest_pair_strip(clusters, mid, delta):
@@ -93,6 +99,7 @@ def closest_pair_strip(clusters, mid, delta):
     return
     ------
     mininum euclidian distance, point1 index, point2 index
+        i1 < i2
 
     rationale
     ---------
@@ -119,95 +126,84 @@ def closest_pair_strip(clusters, mid, delta):
                 min_u = clusters.index(_clusters[idx_u])
                 min_v = clusters.index(_clusters[idx_v])
 
-    return min_dist, min_u, min_v
+    # sort two index
+    return tuple([min_dist] + sorted((min_u, min_v)))
 
 
 def create_dummy_clusters(points=None):
     """Return a list of dummy clusters for testing"""
     clusters = []
-    for i, p in enumerate(points):
-        c = Cluster(set([i]), p[0], p[1], 0, 0)
-        clusters.append(c)
+    for idx, point in enumerate(points):
+        cluster = alg_cluster.Cluster(set([idx]), point[0], point[1], 10, 10)
+        clusters.append(cluster)
     return clusters
 
 
+def hierarchical_clustering(clusters, num_k):
+    """
+    Hierarchical Clustering
 
-# %%
-# plotting that tests the running time of two algos
-# import random, time
-# import matplotlib.pyplot as plt
+    return
+    ------
+    a list of unique clusters objects after clustering
+    """
+    # preprocessing: sort by x-coord
+    clusters.sort(key=lambda x: x.horiz_center())
 
-# random.seed(209523948)
-# M = 10
-# times = []
-# for n in range(10, 10100, 100):
-#     points = [(random.random()*M, random.random()*M) for _ in range(n)]
-#     points.sort(key=lambda x: x[0])  # sorted by x-coord
-#     clusters = create_dummy_clusters(points)
+    while len(clusters) > num_k:
+        _, c1_idx, c2_idx = fast_closest_pair(clusters)
+        cluster1, cluster2 = clusters[c1_idx], clusters[c2_idx]
+        cluster1.merge_clusters(cluster2)
+        clusters.remove(cluster2)
 
-#     stime = time.time()
-#     min_dist, pu, pv = fast_closest_pair(clusters)
-#     etime = time.time()
-#     elapse = etime - stime
-#     times.append(elapse)
+        # maintain x-coord sorting
+        clusters.sort(key=lambda x: x.horiz_center())
 
-# plt.plot(range(10, 10100, 100), times)
+    return clusters
 
 
-# %%
-# random data test for fast algo
-# import random
+def kmeans_clustering(clusters, num_k, num_iter):
+    """
+    K-means Clustering
 
-# random.seed(23234)
-# M = 10
-# for n in range(20, 520, 20):
-#     points = [(random.random()*M, random.random()*M) for _ in range(n)]
-#     points.sort(key=lambda x: x[0])  # sorted by x-coord
-#     clusters = create_dummy_clusters(points)
-#     res_slow = slow_closest_pair(clusters)
-#     res_fast = fast_closest_pair(clusters)
-#     assert abs(res_slow[0] - res_fast[0]) <= 1e-4
+    parameter
+    ---------
+    clusters: 'n', list of clusters to be used to find the kmeans
+    num_k: 'k', number of desired k-mean clusters
+    num_iter: 'q', number of iterations to run
 
-# %%
-# plotting that test between fast and slow algo for correctness
-# import random
-# import matplotlib.pyplot as plt
+    return
+    ------
+    a list of unique clusters objects after clustering
+    """
+    # no need to run
+    num = len(clusters)
+    if num <= num_k or num_iter < 1:
+        return clusters
 
-# random.seed(6865415)
-# M = 10
-# points = [
-#     (0.29530068838606094, 0.9261429782205743),
-#     (0.39694682143442295, 6.006096517635459),
-#     (0.4651737147285573, 5.150845815349867),
-#     (1.5391937098671338, 8.714047930449029),
-#     (2.0627536165444518, 7.11938520658291),
-#     (2.0679245670402455, 1.944518661157295),
-#     (2.742436500077876, 1.1612941030922752),
-#     (2.8723056658340997, 7.42778956574465),
-#     (3.1202752545820944, 8.972076628242203),
-#     (3.6170884147014695, 3.50390822802939),
-#     (3.662125747342589, 9.739789659582339),
-#     (3.8655241851318323, 7.648735478658644),
-#     (4.234446593439591, 6.188983797973931),
-#     (6.2734163048355995, 4.088428291836864),
-#     (6.3664307300777185, 3.9659181136697716),
-#     (7.915386882372797, 8.187903775211087),
-#     (7.93983239260807, 1.3033871104915506),
-#     (8.514814357027534, 8.231756712429245),
-#     (8.833212263099961, 8.33792402677629),
-#     (9.331759888717958, 5.761495413919164)
-# ]
-# clusters = create_dummy_clusters(points)
+    # get init centers by the largest population
+    # no inplace mutation
+    _clusters = [cluster.copy() for cluster in clusters]
+    _clusters.sort(key=lambda x: x.total_population())
+    old_ks = _clusters[-num_k:]
+    for _ in range(num_iter):
+        # init centers for each iteration
+        new_ks = [alg_cluster.Cluster(set(), k.horiz_center(), k.vert_center(), 0, 0) for k in old_ks]
+        for cluster in _clusters:
+            # find the closest k-center
+            # calcualte with the old kmeans center, it is constant
+            # because each update, the new center changes
+            min_dist, min_idx = float('inf'), -1
+            for idx_j, kctr in enumerate(old_ks):
+                dist = cluster.distance(kctr)
+                if dist < min_dist:
+                    min_dist = dist
+                    min_idx = idx_j
+            
+            # update k-center
+            new_ks[min_idx].merge_clusters(cluster)
 
-# plt.plot(
-#     map(lambda x: x.horiz_center(), clusters), map(lambda x: x.vert_center(), clusters),
-#     marker='.', linestyle='', markersize=8, color='b'
-# )
-
-# # dist, idx_u, idx_v = slow_closest_pair(clusters)
-# dist, idx_u, idx_v = fast_closest_pair(clusters)
-# plt.plot(
-#     [clusters[idx_u].horiz_center(), clusters[idx_v].horiz_center()],
-#     [clusters[idx_u].vert_center(), clusters[idx_v].vert_center()],
-#     marker='.', linestyle='', markersize=8, color='orange'
-# )
+        # update kps, for next iteration
+        old_ks = new_ks
+    
+    return old_ks
