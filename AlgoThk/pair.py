@@ -191,7 +191,7 @@ def kmeans_clustering(clusters, num_k, num_iter):
         new_ks = [alg_cluster.Cluster(set(), k.horiz_center(), k.vert_center(), 0, 0) for k in old_ks]
         for cluster in _clusters:
             # find the closest k-center
-            # calcualte with the old kmeans center, it is constant
+            # calcualte with the old kmeans centers that are constant
             # because each update, the new center changes
             min_dist, min_idx = float('inf'), -1
             for idx_j, kctr in enumerate(old_ks):
@@ -207,3 +207,28 @@ def kmeans_clustering(clusters, num_k, num_iter):
         old_ks = new_ks
     
     return old_ks
+
+
+def compute_distortion(clusters, data_table):
+    """
+    Computes the distortion measure of a given list of clusters
+
+    parameter
+    ---------
+    clusters: list, a list of clusters
+    data_table: the original data that used for calculating the clusters
+
+    return 
+    ------
+    distortion: float
+
+    defintion
+    ---------
+    distortion = sum of errors of all clusters
+    cluster error = population weighted sum of member distance to the cluster center
+    """
+    distor = 0
+    for cluster in clusters:
+        error = cluster.cluster_error(data_table)
+        distor += error
+    return distor

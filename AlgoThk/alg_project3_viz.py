@@ -6,7 +6,6 @@ Note that you must download the file
 http://www.codeskulptor.org/#alg_clusters_matplotlib.py
 to use the matplotlib version of this code
 """
-# %%
 # Flavor of Python - desktop or CodeSkulptor
 import math
 import random
@@ -23,10 +22,12 @@ import alg_clusters_matplotlib
 # Numbers indicate number of counties in data table
 
 DIRECTORY = "data/"
-DATA_3108_URL = DIRECTORY + "unifiedCancerData_3108.csv"
-DATA_896_URL = DIRECTORY + "unifiedCancerData_896.csv"
-DATA_290_URL = DIRECTORY + "unifiedCancerData_290.csv"
-DATA_111_URL = DIRECTORY + "unifiedCancerData_111.csv"
+DATA = {
+    '3108': DIRECTORY + "unifiedCancerData_3108.csv",
+    '896': DIRECTORY + "unifiedCancerData_896.csv",
+    '290': DIRECTORY + "unifiedCancerData_290.csv",
+    '111': DIRECTORY + "unifiedCancerData_111.csv",
+}
 
 
 def load_data_table(data_url):
@@ -37,7 +38,6 @@ def load_data_table(data_url):
     data_file = open(data_url)
     data = data_file.read()
     data_lines = data.split('\n')
-    print "Loaded", len(data_lines), "data points"
     data_tokens = [line.split(',') for line in data_lines]
     return [[tokens[0], float(tokens[1]), float(tokens[2]), int(tokens[3]), float(tokens[4])] 
             for tokens in data_tokens]
@@ -76,32 +76,38 @@ def sequential_clustering(singleton_list, num_clusters):
 # visualize the results
 
 
-def run_example():
+def run_example(data='3108', algo='hierarch', num_k=15, num_iter=1):
     """
     Load a data table, compute a list of clusters and 
     plot a list of clusters
 
     Set DESKTOP = True/False to use either matplotlib or simplegui
     """
-    data_table = load_data_table(DATA_3108_URL)
+    data_table = load_data_table(DATA[data])
     
     singleton_list = []
     for line in data_table:
         singleton_list.append(alg_cluster.Cluster(set([line[0]]), line[1], line[2], line[3], line[4]))
-        
-    # cluster_list = sequential_clustering(singleton_list, 15)	
-    # print "Displaying", len(cluster_list), "sequential clusters"
-
-    # cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
-    # print "Displaying", len(cluster_list), "hierarchical clusters"
-
-    cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, 9, 5)	
-    print "Displaying", len(cluster_list), "k-means clusters"
-
-            
-    # draw the clusters using matplotlib or simplegui
-    # alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, False)
-    alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, True)  #add cluster centers
     
+    if algo == 'seq':
+        cluster_list = sequential_clustering(singleton_list, num_k)	
+        print "Displaying", len(cluster_list), "sequential clusters"
+    elif algo == 'hierarch':
+        cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, num_k)
+        print "Displaying", len(cluster_list), "hierarchical clusters"
+    elif algo == 'kmeans':
+        cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, num_k, num_iter)	
+        print "Displaying", len(cluster_list), "k-means clusters"
+    else:
+        raise ValueError
 
-run_example()
+    # calculator distorition and error
+    distor = alg_project3_solution.compute_distortion(cluster_list, data_table)
+    print 'Clustering Distorition', distor
+
+    # draw the clusters using matplotlib or simplegui
+    alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, False)
+    # alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, True)  #add cluster centers
+
+    return cluster_list
+    
