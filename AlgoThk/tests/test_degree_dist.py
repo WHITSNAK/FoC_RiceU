@@ -1,6 +1,6 @@
 import pytest
-from graph_degree import EX_GRAPH0, EX_GRAPH1, EX_GRAPH2
-from graph_degree import compute_in_degrees, in_degree_distribution
+from ..graph_degree import EX_GRAPH0, EX_GRAPH1, EX_GRAPH2
+from ..graph_degree import compute_in_degrees, in_degree_distribution
 
 
 @pytest.fixture

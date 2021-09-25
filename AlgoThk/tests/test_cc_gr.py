@@ -1,5 +1,5 @@
 import pytest
-from cc_gr import bfs_visited, cc_visited, largest_cc_size, compute_resilience
+from ..cc_gr import bfs_visited, cc_visited, largest_cc_size, compute_resilience
 
 
 @pytest.fixture

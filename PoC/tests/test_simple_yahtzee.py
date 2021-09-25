@@ -1,6 +1,6 @@
 import pytest
 from pytest import approx
-from simple_yahtzee import score, expected_value, gen_all_holds, strategy
+from ..simple_yahtzee import score, expected_value, gen_all_holds, strategy
 
 
 @pytest.mark.parametrize(

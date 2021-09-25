@@ -2,9 +2,9 @@ import pytest
 import math
 import random
 from pytest import approx
-from pair import create_dummy_clusters, slow_closest_pair, fast_closest_pair, closest_pair_strip
-from pair import hierarchical_clustering, kmeans_clustering
-from alg_cluster import Cluster
+from ..pair import create_dummy_clusters, slow_closest_pair, fast_closest_pair, closest_pair_strip
+from ..pair import hierarchical_clustering, kmeans_clustering
+from ..alg_cluster import Cluster
 
 
 def test_slow_closest_pair_empties():

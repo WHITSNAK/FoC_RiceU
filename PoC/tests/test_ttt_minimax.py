@@ -1,6 +1,6 @@
 import pytest
-from poc_ttt_provided import TTTBoard, PLAYERO, PLAYERX, EMPTY
-from ttt_minimax import mm_move, _opponent_move
+from ..poc_ttt_provided import TTTBoard, PLAYERO, PLAYERX, EMPTY
+from ..ttt_minimax import mm_move, _opponent_move
 
 O, X, E = PLAYERO, PLAYERX, EMPTY
 

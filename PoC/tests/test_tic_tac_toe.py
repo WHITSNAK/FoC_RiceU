@@ -1,7 +1,7 @@
-from tic_tac_toe import mc_trial, mc_update_scores, get_best_move
-from tic_tac_toe import SCORE_CURRENT, SCORE_OTHER
-from poc_ttt_provided import TTTBoard, EMPTY, PLAYERX, PLAYERO, DRAW
-from .utils import compare_grid
+from ..tic_tac_toe import mc_trial, mc_update_scores, get_best_move
+from ..tic_tac_toe import SCORE_CURRENT, SCORE_OTHER
+from ..poc_ttt_provided import TTTBoard, EMPTY, PLAYERX, PLAYERO, DRAW
+from ..utils import compare_grid
 
 E, X, O = EMPTY, PLAYERX, PLAYERO
 SC, SO = SCORE_CURRENT, SCORE_OTHER

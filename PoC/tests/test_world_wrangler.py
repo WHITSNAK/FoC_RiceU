@@ -1,5 +1,5 @@
 import pytest
-from word_wrangler import remove_duplicates, intersect, merge, merge_sort, gen_all_strings
+from ..word_wrangler import remove_duplicates, intersect, merge, merge_sort, gen_all_strings
 
 @pytest.fixture
 def word_case1():

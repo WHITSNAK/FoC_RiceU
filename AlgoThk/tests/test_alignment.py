@@ -1,5 +1,5 @@
 import pytest
-from alignment import build_scoring_matrix, create_matrix, compute_alignment_matrix
+from ..alignment import build_scoring_matrix, create_matrix, compute_alignment_matrix
 
 
 @pytest.mark.parametrize(

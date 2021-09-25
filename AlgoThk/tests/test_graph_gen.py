@@ -1,5 +1,5 @@
 import pytest
-from graph_gen import make_complete_graph, algo_er, AlgoDPA, AlgoUPA
+from ..graph_gen import make_complete_graph, algo_er, AlgoDPA, AlgoUPA
 
 
 def test_make_complete_graph():

@@ -1,7 +1,7 @@
 # unittests
 import random, pytest
-from game_2048 import merge, empty_tiles, TwentyFortyEight
-from .utils import grid_sum, compare_grid
+from ..game_2048 import merge, empty_tiles, TwentyFortyEight
+from ..utils import grid_sum, compare_grid
 
 
 # test helper functions

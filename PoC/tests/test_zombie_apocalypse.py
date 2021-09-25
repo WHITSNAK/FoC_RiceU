@@ -1,7 +1,7 @@
 import pytest
-from zombie_apocalypse import Apocalypse, grids_min, create_grid, ZOMBIE, HUMAN
-from poc_grid import Grid
-from poc_queue import Queue
+from ..zombie_apocalypse import Apocalypse, grids_min, create_grid, ZOMBIE, HUMAN
+from ..poc_grid import Grid
+from ..poc_queue import Queue
 
 
 @pytest.fixture

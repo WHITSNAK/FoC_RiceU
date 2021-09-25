@@ -1,8 +1,8 @@
 import pytest
 from pytest import approx
-from cookie_clicker import ClickerState, simulate_clicker
-from cookie_clicker import strategy_cursor_broken, strategy_none, strategy_polar
-from poc_clicker_provided import BuildInfo
+from ..cookie_clicker import ClickerState, simulate_clicker
+from ..cookie_clicker import strategy_cursor_broken, strategy_none, strategy_polar
+from ..poc_clicker_provided import BuildInfo
 
 
 # clickerstart tests

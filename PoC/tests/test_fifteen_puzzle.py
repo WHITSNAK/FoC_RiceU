@@ -1,7 +1,7 @@
 import pytest
-from fifteen_puzzle import Puzzle
-from fifteen_puzzle import Grid, Queue, Node, SimpleGraph
-from fifteen_puzzle import create_path_graph, trace_root, path2moves
+from ..fifteen_puzzle import Puzzle
+from ..fifteen_puzzle import Grid, Queue, Node, SimpleGraph
+from ..fifteen_puzzle import create_path_graph, trace_root, path2moves
 
 
 @pytest.fixture

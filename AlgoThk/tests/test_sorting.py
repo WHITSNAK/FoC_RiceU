@@ -1,5 +1,5 @@
 import pytest
-from sorting import count_inversion, merge
+from ..sorting import count_inversion, merge
 
 
 def test_count_inversion():
