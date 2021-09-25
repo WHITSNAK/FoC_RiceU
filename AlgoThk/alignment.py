@@ -97,3 +97,114 @@ def compute_alignment_matrix(seq_x, seq_y, scores, global_flag):
             matrix[row_i][col_j] = _zero_floor(val, not global_flag)
 
     return matrix
+
+
+def _matrix_max(matrix):
+    """Finds the max value in a matrix along its indexes"""
+    max_val = float('-inf')
+    max_i, max_j = None, None
+
+    for row_i, row in enumerate(matrix):
+        for col_j, tile in enumerate(row):
+            if tile > max_val:
+                max_val = tile
+                max_i, max_j = row_i, col_j
+    
+    return max_val, max_i, max_j
+
+
+def _compute_alignment(seq_x, seq_y, scores, aligns, kind='global'):
+    """Internal alignment finding function"""
+    # start with empty sequences
+    _x2, _y2 = '', ''
+
+    # init the starting tile
+    if kind == 'global':
+        row_i, col_j = len(seq_x), len(seq_y)
+        score = aligns[row_i][col_j]
+    elif kind == 'local':
+        score, row_i, col_j = _matrix_max(aligns)
+
+    # traverse and creating the subsequence alone the DP table
+    while row_i != 0 and col_j != 0:
+        _align = aligns[row_i][col_j]
+        if kind == 'local' and _align == 0:
+            # early terminate when encounter the first zero
+            break
+
+        if _align == aligns[row_i-1][col_j-1] + scores[seq_x[row_i-1]][seq_y[col_j-1]]:
+            _x2 = seq_x[row_i-1] + _x2
+            _y2 = seq_y[col_j-1] + _y2
+            row_i -= 1
+            col_j -=1
+        elif _align == aligns[row_i-1][col_j] + scores[seq_x[row_i-1]]['-']:
+            _x2 = seq_x[row_i-1] + _x2
+            _y2 = '-' + _y2
+            row_i -= 1
+        else:
+            _x2 = '-' + _x2
+            _y2 = seq_y[col_j-1] + _y2
+            col_j -= 1
+    
+    # pad in the remaing, only for global alignment
+    if kind == 'global':
+        while row_i != 0:
+            _x2 = seq_x[row_i-1] + _x2
+            _y2 = '-' + _y2
+            row_i -= 1
+        
+        while col_j != 0:
+            _x2 = '-' + _x2
+            _y2 = seq_y[col_j-1] + _y2
+            col_j -= 1
+    
+    return score, _x2, _y2
+
+
+def compute_global_alignment(seq_x, seq_y, scores, aligns):
+    """
+    Finds the optimal global alignment of two given sequences
+
+    parameter
+    ---------
+    seq_x, seq_y: two sequences used to look for a global alignment
+    scores: scoring matrix that is used in alignments
+    aligns: the DP matrix for all alignments
+
+    return
+    ------
+    (score, X', Y'): tuple
+        the optimal score, and two globally aligned sequences with the same size
+        '-' might be added
+    
+    example
+    -------
+    X = 'AA', Y = 'TAAT'
+    >> (8, '-AA-', 'TAAT')
+    """
+    return _compute_alignment(seq_x, seq_y, scores, aligns, kind='global')
+
+
+def compute_local_alignment(seq_x, seq_y, scores, aligns):
+    """
+    Finds the optimal local alignment of two given sequences
+
+    parameter
+    ---------
+    seq_x, seq_y: two sequences used to look for a local alignment
+    scores: scoring matrix that is used in alignments
+    aligns: the DP matrix for all alignments
+
+    return
+    ------
+    (score, X', Y'): tuple
+        the optimal score, and two locally aligned sub-sequences with the same size
+        '-' might be added
+    
+    example
+    -------
+    X = 'AA', Y = 'TAAT'
+    >> (20, 'AA', 'AA')
+    """
+    return _compute_alignment(seq_x, seq_y, scores, aligns, kind='local')
+

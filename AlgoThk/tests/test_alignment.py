@@ -1,5 +1,6 @@
 import pytest
 from ..alignment import build_scoring_matrix, create_matrix, compute_alignment_matrix
+from ..alignment import compute_global_alignment, compute_local_alignment
 
 
 @pytest.mark.parametrize(
@@ -57,4 +58,54 @@ def test_create_matrix(nrow, ncol, default, expected):
 def test_compute_alignment_matrix(seq_x, seq_y, scores, global_flag, expected):
     assert compute_alignment_matrix(seq_x, seq_y, scores, global_flag) == expected
 
+
+@pytest.mark.parametrize(
+    'seq_x, seq_y, scores, aligns, expected',
+    [
+        (
+            'AA', 'TAAT',
+            build_scoring_matrix(set(['A','T']), 10, 4, -6),
+            [[  0, -6,-12,-18,-24],
+             [ -6,  4,  4, -2, -8],
+             [-12, -2, 14, 14,  8]],
+            (8, '-AA-', 'TAAT'),
+        ),
+        (
+            'A', 'A',
+            build_scoring_matrix(set(['A','C','T','G']), 6, 2, -4),
+            [[0, -4], [-4, 6]],
+            (6, 'A', 'A'),
+        ),
+        (
+            'ATG', 'ACG',
+            build_scoring_matrix(set(['A','C','T','G']), 6, 2, -4),
+            [[  0, -4, -8,-12],
+             [ -4,  6,  2, -2],
+             [ -8,  2,  8,  4],
+             [-12, -2,  4, 14]],
+            (14, 'ATG', 'ACG')
+        ),
+    ]
+)
+def test_compute_global_alignment(seq_x, seq_y, scores, aligns, expected):
+    assert compute_global_alignment(seq_x, seq_y, scores, aligns) == expected
+
+
+@pytest.mark.parametrize(
+    'seq_x, seq_y, scores, aligns, expected',
+    [
+        (
+            'ATCG', 'CCG',
+            build_scoring_matrix(set('ATCG'+'CCG'), 2, -1, -1),
+            [[0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 0, 0, 0],
+             [0, 2, 2, 1],
+             [0, 1, 1, 4]],
+            (4, 'CG', 'CG'),
+        ),
+    ]
+)
+def test_compute_local_alignment(seq_x, seq_y, scores, aligns, expected):
+    assert compute_local_alignment(seq_x, seq_y, scores, aligns) == expected
 
