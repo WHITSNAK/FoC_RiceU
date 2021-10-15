@@ -31,6 +31,7 @@ This seven-course specialization covers much of the material that first-year com
   <li>Applications to Genomics and Beyond</li>
 </ul>
 
+<strong>Courses Overview</strong>
 <ol>
   <li><strong>Introduction to Interactive Programming in Python (IIPP)</strong>: A two-part course introduces the basic elements of programming includes:
   <ul>
