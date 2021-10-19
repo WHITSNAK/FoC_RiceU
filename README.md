@@ -1,8 +1,11 @@
-# Fundamentals of Computing 
+# Fundamentals of Computing - Coursera
 
 Repository contains my implmentations of 20+ mini projects for Rice University's <a href="https://www.coursera.org/specializations/computer-fundamentals" target="_blank">Fundamentals of Computing</a> specialization on Coursera. Fully tested.
 
 This seven-course specialization covers much of the material that first-year computer science students learn at Rice University. Students build over 20 projects throughout the specialization and learn programming skills and computer science concepts using the Python programming language. Here are some of the concepts covered in this comprehensive computer science specialization:
+
+#### Proof of my certification can be seen [here](https://www.coursera.org/account/accomplishments/specialization/certificate/LXSDCK4EBA7Q).</br> 
+#### Note: The material provided in this repository is only for helping those who may get stuck at any point of time in the course. It is strongly advised that no one should just copy the solutions(voilation of Coursera Honor Code) presented here.
 
 <strong>List of Projects</strong>
 <ul>
